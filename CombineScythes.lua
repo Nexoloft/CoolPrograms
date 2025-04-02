@@ -8,6 +8,7 @@ local remote = ReplicatedStorage
 -- Create the ScreenGui
 local screenGui = Instance.new('ScreenGui')
 screenGui.Parent = player:WaitForChild('PlayerGui')
+screenGui.Enabled = true  -- Explicitly set initial state to match guiVisible
 
 -- Create a frame to hold our UI elements
 local frame = Instance.new('Frame')
