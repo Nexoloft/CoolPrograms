@@ -100,6 +100,26 @@ buyButton.MouseButton1Click:Connect(function()
     buyReaperScythes(amount)
 end)
 
+-- Initially, the GUI is visible
+local guiVisible = true
+
+-- Function to toggle the visibility of the GUI
+local function toggleGUI()
+    guiVisible = not guiVisible
+    screenGui.Enabled = guiVisible
+end
+
+-- Use UserInputService to detect when the LeftControl key is pressed
+local UserInputService = game:GetService("UserInputService")
+
+UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
+    if gameProcessedEvent then return end -- Prevents the function from running when the game already processed the event
+
+    if input.KeyCode == Enum.KeyCode.LeftControl then
+        toggleGUI()
+    end
+end)
+
 ---------------------------------
 -- Utility Functions
 ---------------------------------
