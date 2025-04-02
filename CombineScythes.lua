@@ -74,9 +74,56 @@ runAllButton.Position = UDim2.new(0, 0, 0, 260)
 runAllButton.Text = 'Upgrade All Levels'
 runAllButton.Parent = frame
 
+-- Add a button to buy a custom number of reaper scythes
+local buyButton = Instance.new('TextButton')
+buyButton.Size = UDim2.new(1, 0, 0, 40)
+buyButton.Position = UDim2.new(0, 0, 0, 310)
+buyButton.Text = 'Buy Custom Amount of Reaper Scythes'
+buyButton.Parent = frame
+
+-- Input for how many scythes to buy
+local buyAmountBox = Instance.new('TextBox')
+buyAmountBox.Size = UDim2.new(1, 0, 0, 30)
+buyAmountBox.Position = UDim2.new(0, 0, 0, 350)
+buyAmountBox.Text = '10'
+buyAmountBox.ClearTextOnFocus = false
+buyAmountBox.PlaceholderText = 'Enter number of scythes to buy'
+buyAmountBox.Parent = frame
+
+-- Hook up button to buying scythes
+buyButton.MouseButton1Click:Connect(function()
+    local amount = tonumber(buyAmountBox.Text)
+    if not amount then
+        print('Invalid number entered.')
+        return
+    end
+    buyReaperScythes(amount)
+end)
+
 ---------------------------------
 -- Utility Functions
 ---------------------------------
+
+-- Buy scythes with 0.3s delay
+local function buyReaperScythes(amount)
+    for i = 1, amount do
+        local args = {
+            [1] = {
+                [1] = {
+                    ["Action"] = "Buy",
+                    ["Shop"] = "WeaponShop7",
+                    ["Item"] = "SlayerScythe2",
+                    ["Event"] = "ItemShopAction"
+                },
+                [2] = "\n"
+            }
+        }
+
+        remote:FireServer(unpack(args))
+        wait(0.3)
+    end
+end
+
 
 -- Returns an array of weapon names that have the required level.
 local function getWeaponsAtLevel(levelCondition)
