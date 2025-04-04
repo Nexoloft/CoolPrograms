@@ -119,68 +119,49 @@ local junkWeapons = {
     "SteelKando",
     "SteelSaber",
     "TrollSlayer",
-    "StellKophesh",
+    "StellKopesh",
     "DualTrident",
     "SteelScythe",
     "WyvernSlayer",
-    "TrollSlayer",
-
 }
 
--- Function to get all weapons from inventory that match our junk list
-local function getJunkWeaponsFromInventory()
-    local player = game:GetService("Players").LocalPlayer
-    local weapons = player.leaderstats.Inventory.Weapons
-    local junkToSell = {}
+-- Function to sell all junk weapons
+local function sellAllJunkWeapons()
+    local soldCount = 0
     
-    -- Loop through all items in weapons inventory
-    for _, weapon in pairs(weapons:GetChildren()) do
-        -- Extract base weapon name (remove the unique ID part)
-        local weaponBaseName = weapon.Name:match("^([%a]+)")
-        
-        -- Check if this weapon is in our junk list
-        for _, junkName in ipairs(junkWeapons) do
-            if weaponBaseName == junkName then
-                table.insert(junkToSell, weapon.Name)
-                break
+    -- Reference to the weapons folder
+    local weaponsFolder = game:GetService("Players").LocalPlayer
+        .leaderstats.Inventory.Weapons
+    
+    -- Sell each junk weapon found in inventory
+    for _, weapon in ipairs(weaponsFolder:GetChildren()) do
+        for _, baseName in ipairs(junkWeapons) do
+            if string.match(weapon.Name, "^" .. baseName) then
+                local args = {
+                    {
+                        {
+                            ["Action"] = "Sell",
+                            ["Event"] = "WeaponAction",
+                            ["Name"] = weapon.Name
+                        },
+                        "\n"
+                    }
+                }
+                game:GetService("ReplicatedStorage")
+                    :WaitForChild("BridgeNet2")
+                    :WaitForChild("dataRemoteEvent")
+                    :FireServer(unpack(args))
+                
+                print("Selling: " .. weapon.Name)
+                soldCount = soldCount + 1
+                wait(0.3)
+                break -- Stop checking other names once matched
             end
         end
     end
     
-    return junkToSell
-end
-
--- Function to sell a weapon
-local function sellWeapon(weaponName)
-    local args = {
-        [1] = {
-            [1] = {
-                ["Action"] = "Sell",
-                ["Event"] = "WeaponAction",
-                ["Name"] = weaponName
-            },
-            [2] = "\n"
-        }
-    }
-    
-    remote:FireServer(unpack(args))
-    print("Selling: " .. weaponName)
-    wait(0.5) -- Small delay between sells to avoid rate limiting
-end
-
--- Main function to sell all junk weapons
-local function sellAllJunkWeapons()
-    local junkToSell = getJunkWeaponsFromInventory()
-    
-    print("Found " .. #junkToSell .. " junk weapons to sell")
-    
-    for _, weaponName in ipairs(junkToSell) do
-        sellWeapon(weaponName)
-    end
-    
-    print("Finished selling all junk weapons")
-    
-    return #junkToSell -- Return count for UI feedback
+    print("Finished selling " .. soldCount .. " junk weapons")
+    return soldCount
 end
 
 -- Load Material UI Library from ReplicatedStorage or ServerStorage
