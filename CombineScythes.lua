@@ -26,7 +26,7 @@ local function buyReaperScythes(amount)
         
         remote:FireServer(unpack(args))
         
-        wait(0.3)  -- Adjust the delay as needed
+        wait(0.5)  -- Adjust the delay as needed
     end 
 end
 
