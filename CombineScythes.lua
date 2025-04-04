@@ -9,7 +9,7 @@ local remote = ReplicatedStorage
 -- Utility Functions
 ---------------------------------
 
--- Buy scythes with 0.3s delay
+-- Buy scythes with 1s delay
 local function buyReaperScythes(amount)
     for i = 1, amount do
         local args = {
@@ -25,8 +25,7 @@ local function buyReaperScythes(amount)
         }
         
         remote:FireServer(unpack(args))
-        
-        wait(0.5)  -- Adjust the delay as needed
+        wait(.3)  -- Adjust the delay as needed
     end 
 end
 
