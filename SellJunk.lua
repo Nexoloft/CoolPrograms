@@ -6,7 +6,6 @@ local junkWeapons = {
     "DualDivineAxe",
     "DualGemStaffs",
     "DualKando",
-    "DualRuneSword",
     "DualSteelNaginata",
     "GreatSaber",
     "MixedBattleAxe",
@@ -16,6 +15,7 @@ local junkWeapons = {
     "SteelKando",
     "SteelSaber",
     "TrollSlayer"
+    'StellKophesh',
 }
 
 -- Function to get all weapons from inventory that match our junk list
