@@ -100,28 +100,109 @@ local function combineWeaponsForLevel(levelCondition, upgradeLevel)
     end
 end
 
+---------------------------------
+-- Junk Weapons Selling Functions
+---------------------------------
+
+-- List of weapons to sell
+local junkWeapons = {
+    "BoneMace",
+    "DualDivineAxe",
+    "DualGemStaffs",
+    "DualKando",
+    "DualRuneSword",
+    "DualSteelNaginata",
+    "GreatSaber",
+    "MixedBattleAxe",
+    "MonsterSlayer",
+    "ObsidianDualAxe",
+    "RuneSword",
+    "SteelKando",
+    "SteelSaber",
+    "TrollSlayer"
+}
+
+-- Function to get all weapons from inventory that match our junk list
+local function getJunkWeaponsFromInventory()
+    local player = game:GetService("Players").LocalPlayer
+    local weapons = player.leaderstats.Inventory.Weapons
+    local junkToSell = {}
+    
+    -- Loop through all items in weapons inventory
+    for _, weapon in pairs(weapons:GetChildren()) do
+        -- Extract base weapon name (remove the unique ID part)
+        local weaponBaseName = weapon.Name:match("^([%a]+)")
+        
+        -- Check if this weapon is in our junk list
+        for _, junkName in ipairs(junkWeapons) do
+            if weaponBaseName == junkName then
+                table.insert(junkToSell, weapon.Name)
+                break
+            end
+        end
+    end
+    
+    return junkToSell
+end
+
+-- Function to sell a weapon
+local function sellWeapon(weaponName)
+    local args = {
+        [1] = {
+            [1] = {
+                ["Action"] = "Sell",
+                ["Event"] = "WeaponAction",
+                ["Name"] = weaponName
+            },
+            [2] = "\n"
+        }
+    }
+    
+    remote:FireServer(unpack(args))
+    print("Selling: " .. weaponName)
+    wait(0.5) -- Small delay between sells to avoid rate limiting
+end
+
+-- Main function to sell all junk weapons
+local function sellAllJunkWeapons()
+    local junkToSell = getJunkWeaponsFromInventory()
+    
+    print("Found " .. #junkToSell .. " junk weapons to sell")
+    
+    for _, weaponName in ipairs(junkToSell) do
+        sellWeapon(weaponName)
+    end
+    
+    print("Finished selling all junk weapons")
+    
+    return #junkToSell -- Return count for UI feedback
+end
+
 -- Load Material UI Library from ReplicatedStorage or ServerStorage
 local MaterialUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Kinlei/MaterialLua/master/Module.lua"))()
 
 -- Create a new Material UI window
 local UI = MaterialUI.Load({
-    Title = "Scythe Combiner",
+    Title = "Weapon Manager",
     Style = 3,
-    SizeX = 400,
-    SizeY = 450,
+    SizeX = 500,
+    SizeY = 550,
     Theme = "Dark"
 })
 
--- Create tabs for different functionality
+-- Create a single comprehensive tab
 local mainTab = UI.New({
-    Title = "Combine"
+    Title = "Weapons"
 })
 
-local buyTab = UI.New({
-    Title = "Buy"
+-- Add section titles for better organization
+mainTab.Label({
+    Text = "--- SCYTHE UPGRADING ---",
+    TextSize = 16,
+    TextColor = Color3.fromRGB(255, 255, 255)
 })
 
--- Add UI elements to the main tab
+-- Upgrade inputs
 local startLevelInput = mainTab.TextField({
     Text = "Start Level",
     Placeholder = "e.g. 1",
@@ -140,6 +221,7 @@ local maxLevelInput = mainTab.TextField({
     Callback = function(value) end
 })
 
+-- Upgrade buttons
 mainTab.Button({
     Text = "Upgrade Single Level",
     Callback = function()
@@ -153,6 +235,9 @@ mainTab.Button({
         end
         
         combineWeaponsForLevel(levelCondition, upgradeLevel)
+        mainTab.Banner({
+            Text = "Completed single level upgrade"
+        })
     end
 })
 
@@ -176,36 +261,66 @@ mainTab.Button({
             combineWeaponsForLevel(currentLevel, upgradeLevel)
             wait(1) -- Delay between level upgrades
         end
+        
+        mainTab.Banner({
+            Text = "Completed all level upgrades"
+        })
     end
 })
 
--- Add UI elements to the buy tab
-local buyAmountInput = buyTab.TextField({
+-- Add purchasing section
+mainTab.Label({
+    Text = "--- WEAPON PURCHASING ---",
+    TextSize = 16,
+    TextColor = Color3.fromRGB(255, 255, 255)
+})
+
+local buyAmountInput = mainTab.TextField({
     Text = "Amount to Buy",
     Placeholder = "e.g. 10",
     Callback = function(value) end
 })
 
-buyTab.Button({
+mainTab.Button({
     Text = "Buy Reaper Scythes",
     Callback = function()
         local amount = tonumber(buyAmountInput.Text)
         if not amount then
-            return buyTab.Banner({
+            return mainTab.Banner({
                 Text = "Invalid number entered."
             })
         end
         buyReaperScythes(amount)
+        mainTab.Banner({
+            Text = "Purchased " .. amount .. " Reaper Scythes"
+        })
     end
 })
 
 -- Add button to buy Rare Dust
-buyTab.Button({
+mainTab.Button({
     Text = "Buy Rare Dust",
     Callback = function()
         buyRareDust()
-        buyTab.Banner({
+        mainTab.Banner({
             Text = "Purchased Rare Dust"
+        })
+    end
+})
+
+-- Add junk selling section
+mainTab.Label({
+    Text = "--- JUNK SELLING ---",
+    TextSize = 16,
+    TextColor = Color3.fromRGB(255, 255, 255)
+})
+
+mainTab.Button({
+    Text = "Sell All Junk Weapons",
+    Callback = function()
+        local count = sellAllJunkWeapons()
+        mainTab.Banner({
+            Text = "Sold " .. count .. " junk weapons"
         })
     end
 })
