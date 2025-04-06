@@ -74,16 +74,20 @@ local function combineWeaponsForLevel(levelCondition, upgradeLevel)
             table.remove(weapons, 1),
         }
         local args = {
-            {
-                {
-                    ['Type'] = 'SlayerScythe2',
-                    ['BuyType'] = 'Gems',
-                    ['Weapons'] = selectedWeapons,
-                    ['Event'] = 'UpgradeWeapon',
-                    ['Level'] = upgradeLevel,
+            [1] = {
+                [1] = {
+                    ["Type"] = "SlayerScythe2",
+                    ["BuyType"] = "Gems",
+                    ["Weapons"] = {
+                        [1] = selectedWeapons[1],
+                        [2] = selectedWeapons[2],
+                        [3] = selectedWeapons[3]
+                    },
+                    ["Event"] = "UpgradeWeapon",
+                    ["Level"] = upgradeLevel
                 },
-                '\n',
-            },
+                [2] = "\n"
+            }
         }
 
         print(
