@@ -237,29 +237,43 @@ mainTab.Button({
             })
         end
         
+        -- Set maxLevel to 8 if it's less than or equal to 4
+        if maxLevel <= 4 then
+            maxLevel = 8
+            mainTab.Banner({
+                Text = "Maximum level automatically set to 8"
+            })
+        end
+        
         -- Sequential upgrading from startLevel to maxLevel-1
         for currentLevel = startLevel, maxLevel - 1 do
             local upgradeLevel = currentLevel + 1
             print('Upgrading weapons from level', currentLevel, 'to', upgradeLevel)
             
-            -- Get weapons at current level
+            -- Get weapons at current level before upgrading
             local weapons = getWeaponsAtLevel(currentLevel)
             local totalWeapons = #weapons
-            local groupsToUpgrade = math.floor(totalWeapons / 3)
             
-            mainTab.Banner({
-                Text = "Found " .. totalWeapons .. " weapons at level " .. currentLevel .. ". Upgrading..."
-            })
-            
-            -- Upgrade all available groups at this level
-            combineWeaponsForLevel(currentLevel, upgradeLevel)
-            
-            -- Wait for this level to complete before moving to next level
-            wait(2) -- Give some time between level upgrades
+            if totalWeapons >= 3 then
+                mainTab.Banner({
+                    Text = "Found " .. totalWeapons .. " weapons at level " .. currentLevel .. ". Upgrading..."
+                })
+                
+                -- Upgrade all available groups at this level
+                combineWeaponsForLevel(currentLevel, upgradeLevel)
+                
+                -- Wait a bit longer to ensure server processing is complete
+                wait(3)
+            else
+                mainTab.Banner({
+                    Text = "Not enough level " .. currentLevel .. " weapons to upgrade. Skipping."
+                })
+                wait(1)
+            end
         end
         
         mainTab.Banner({
-            Text = "Completed all level upgrades"
+            Text = "Completed all level upgrades up to level " .. maxLevel
         })
     end
 })
