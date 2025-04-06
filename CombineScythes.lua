@@ -239,7 +239,7 @@ mainTab.Button({
         end
         
         -- Loop from the starting level until one less than the maximum.
-        for currentLevel = startLevel, maxLevel - 1 do
+        for currentLevel = startLevel, 8 - 1 do
             local upgradeLevel = currentLevel + 1
             print('Upgrading weapons from level', currentLevel, 'to', upgradeLevel)
             combineWeaponsForLevel(currentLevel, upgradeLevel)
