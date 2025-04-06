@@ -137,20 +137,19 @@ local function sellAllJunkWeapons()
         for _, baseName in ipairs(junkWeapons) do
             if string.match(weapon.Name, "^" .. baseName) then
                 local args = {
-                    {
-                        {
-                            ["Action"] = "Sell",
+                    [1] = {
+                        [1] = {
+                            ["Weapons"] = {
+                                [1] = weapon.Name
+                            },
                             ["Event"] = "WeaponAction",
-                            ["Name"] = weapon.Name
+                            ["Action"] = "Sell"
                         },
-                        "\n"
+                        [2] = "\n"
                     }
                 }
-                game:GetService("ReplicatedStorage")
-                    :WaitForChild("BridgeNet2")
-                    :WaitForChild("dataRemoteEvent")
-                    :FireServer(unpack(args))
                 
+                remote:FireServer(unpack(args))
                 print("Selling: " .. weapon.Name)
                 soldCount = soldCount + 1
                 wait(0.3)
