@@ -28,13 +28,15 @@ for _, weapon in ipairs(weaponsFolder:GetChildren()) do
     for _, baseName in ipairs(junkWeapons) do
         if string.match(weapon.Name, "^" .. baseName) then
             local args = {
-                {
-                    {
-                        ["Action"] = "Sell",
+                [1] = {
+                    [1] = {
+                        ["Weapons"] = {
+                            [1] = weapon.Name
+                        },
                         ["Event"] = "WeaponAction",
-                        ["Name"] = weapon.Name
+                        ["Action"] = "Sell"
                     },
-                    "\n"
+                    [2] = "\n"
                 }
             }
             game:GetService("ReplicatedStorage")
