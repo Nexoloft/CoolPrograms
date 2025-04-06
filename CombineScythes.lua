@@ -228,22 +228,34 @@ mainTab.Button({
 mainTab.Button({
     Text = "Upgrade All Levels",
     Callback = function()
-        local startLevel = tonumber(startLevelInput.Text)
-        local nextLevel = tonumber(nextLevelInput.Text)
-        local maxLevel = tonumber(maxLevelInput.Text)
+        local startLevel = tonumber(startLevelInput.Text) or 1
+        local maxLevel = tonumber(maxLevelInput.Text) or 8
         
-        if not startLevel or not nextLevel or not maxLevel then
+        if not startLevel or not maxLevel then
             return mainTab.Banner({
                 Text = "Invalid input for levels."
             })
         end
         
-        -- Loop from the starting level until one less than the maximum.
-        for currentLevel = startLevel, 8 - 1 do
+        -- Sequential upgrading from startLevel to maxLevel-1
+        for currentLevel = startLevel, maxLevel - 1 do
             local upgradeLevel = currentLevel + 1
             print('Upgrading weapons from level', currentLevel, 'to', upgradeLevel)
+            
+            -- Get weapons at current level
+            local weapons = getWeaponsAtLevel(currentLevel)
+            local totalWeapons = #weapons
+            local groupsToUpgrade = math.floor(totalWeapons / 3)
+            
+            mainTab.Banner({
+                Text = "Found " .. totalWeapons .. " weapons at level " .. currentLevel .. ". Upgrading..."
+            })
+            
+            -- Upgrade all available groups at this level
             combineWeaponsForLevel(currentLevel, upgradeLevel)
-            wait(1) -- Delay between level upgrades
+            
+            -- Wait for this level to complete before moving to next level
+            wait(2) -- Give some time between level upgrades
         end
         
         mainTab.Banner({
