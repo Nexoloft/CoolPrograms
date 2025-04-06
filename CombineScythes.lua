@@ -66,6 +66,7 @@ end
 -- Combines weapons (in groups of 3) from a given level and sends an upgrade request.
 local function combineWeaponsForLevel(levelCondition, upgradeLevel)
     local weapons = getWeaponsAtLevel(levelCondition)
+    print("Found " .. #weapons .. " weapons at level " .. levelCondition)
 
     while #weapons >= 3 do
         local selectedWeapons = {
@@ -73,6 +74,10 @@ local function combineWeaponsForLevel(levelCondition, upgradeLevel)
             table.remove(weapons, 1),
             table.remove(weapons, 1),
         }
+        
+        -- Debug print before sending
+        print("Selected weapons for upgrade:", selectedWeapons[1], selectedWeapons[2], selectedWeapons[3])
+        
         local args = {
             [1] = {
                 [1] = {
@@ -90,17 +95,17 @@ local function combineWeaponsForLevel(levelCondition, upgradeLevel)
             }
         }
 
-        print(
-            'Upgrading from level',
-            levelCondition,
-            'to',
-            upgradeLevel,
-            'with weapons:',
-            table.concat(selectedWeapons, ', ')
-        )
+        print('Sending upgrade request from level ' .. levelCondition .. ' to ' .. upgradeLevel)
         remote:FireServer(unpack(args))
-        wait(0.5) -- Delay to prevent flooding
+        
+        -- Give the server more time to process
+        wait(1.5)
     end
+    
+    -- Check if any weapons were upgraded
+    wait(2)
+    local afterUpgradeCount = #getWeaponsAtLevel(upgradeLevel)
+    print("After upgrading: Found " .. afterUpgradeCount .. " weapons at level " .. upgradeLevel)
 end
 
 ---------------------------------
