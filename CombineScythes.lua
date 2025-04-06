@@ -95,7 +95,7 @@ local function combineWeaponsForLevel(levelCondition, upgradeLevel)
             table.concat(selectedWeapons, ', ')
         )
         remote:FireServer(unpack(args))
-        wait(0.5) -- Delay to prevent flooding
+        wait(0.2) -- Delay to prevent flooding
     end
 end
 
