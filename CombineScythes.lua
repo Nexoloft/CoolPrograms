@@ -66,6 +66,7 @@ end
 -- Combines weapons (in groups of 3) from a given level and sends an upgrade request.
 local function combineWeaponsForLevel(levelCondition, upgradeLevel)
     local weapons = getWeaponsAtLevel(levelCondition)
+    print("Found " .. #weapons .. " weapons at level " .. levelCondition)
 
     while #weapons >= 3 do
         local selectedWeapons = {
@@ -73,30 +74,38 @@ local function combineWeaponsForLevel(levelCondition, upgradeLevel)
             table.remove(weapons, 1),
             table.remove(weapons, 1),
         }
+        
+        -- Debug print before sending
+        print("Selected weapons for upgrade:", selectedWeapons[1], selectedWeapons[2], selectedWeapons[3])
+        
         local args = {
-            {
-                {
-                    ['Type'] = 'SlayerScythe2',
-                    ['BuyType'] = 'Gems',
-                    ['Weapons'] = selectedWeapons,
-                    ['Event'] = 'UpgradeWeapon',
-                    ['Level'] = upgradeLevel,
+            [1] = {
+                [1] = {
+                    ["Type"] = "SlayerScythe2",
+                    ["BuyType"] = "Gems",
+                    ["Weapons"] = {
+                        [1] = selectedWeapons[1],
+                        [2] = selectedWeapons[2],
+                        [3] = selectedWeapons[3]
+                    },
+                    ["Event"] = "UpgradeWeapon",
+                    ["Level"] = upgradeLevel
                 },
-                '\n',
-            },
+                [2] = "\n"
+            }
         }
 
-        print(
-            'Upgrading from level',
-            levelCondition,
-            'to',
-            upgradeLevel,
-            'with weapons:',
-            table.concat(selectedWeapons, ', ')
-        )
+        print('Sending upgrade request from level ' .. levelCondition .. ' to ' .. upgradeLevel)
         remote:FireServer(unpack(args))
-        wait(0.5) -- Delay to prevent flooding
+        
+        -- Give the server more time to process
+        wait(1.5)
     end
+    
+    -- Check if any weapons were upgraded
+    wait(2)
+    local afterUpgradeCount = #getWeaponsAtLevel(upgradeLevel)
+    print("After upgrading: Found " .. afterUpgradeCount .. " weapons at level " .. upgradeLevel)
 end
 
 ---------------------------------
@@ -229,26 +238,52 @@ mainTab.Button({
 mainTab.Button({
     Text = "Upgrade All Levels",
     Callback = function()
-        local startLevel = tonumber(startLevelInput.Text)
-        local nextLevel = tonumber(nextLevelInput.Text)
-        local maxLevel = tonumber(maxLevelInput.Text)
+        local startLevel = tonumber(startLevelInput.Text) or 1
+        local maxLevel = tonumber(maxLevelInput.Text) or 8
         
-        if not startLevel or not nextLevel or not maxLevel then
+        if not startLevel or not maxLevel then
             return mainTab.Banner({
                 Text = "Invalid input for levels."
             })
         end
         
-        -- Loop from the starting level until one less than the maximum.
+        -- Set maxLevel to 8 if it's less than or equal to 4
+        if maxLevel <= 4 then
+            maxLevel = 8
+            mainTab.Banner({
+                Text = "Maximum level automatically set to 8"
+            })
+        end
+        
+        -- Sequential upgrading from startLevel to maxLevel-1
         for currentLevel = startLevel, maxLevel - 1 do
             local upgradeLevel = currentLevel + 1
             print('Upgrading weapons from level', currentLevel, 'to', upgradeLevel)
-            combineWeaponsForLevel(currentLevel, upgradeLevel)
-            wait(1) -- Delay between level upgrades
+            
+            -- Get weapons at current level before upgrading
+            local weapons = getWeaponsAtLevel(currentLevel)
+            local totalWeapons = #weapons
+            
+            if totalWeapons >= 3 then
+                mainTab.Banner({
+                    Text = "Found " .. totalWeapons .. " weapons at level " .. currentLevel .. ". Upgrading..."
+                })
+                
+                -- Upgrade all available groups at this level
+                combineWeaponsForLevel(currentLevel, upgradeLevel)
+                
+                -- Wait a bit longer to ensure server processing is complete
+                wait(3)
+            else
+                mainTab.Banner({
+                    Text = "Not enough level " .. currentLevel .. " weapons to upgrade. Skipping."
+                })
+                wait(1)
+            end
         end
         
         mainTab.Banner({
-            Text = "Completed all level upgrades"
+            Text = "Completed all level upgrades up to level " .. maxLevel
         })
     end
 })
