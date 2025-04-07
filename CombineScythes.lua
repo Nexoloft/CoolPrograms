@@ -221,7 +221,7 @@ mainTab.Button({
         combineWeaponsForLevel(levelCondition, upgradeLevel)
         mainTab.Banner({
             Text = "Completed single level upgrade"
-        })
+        })~
     end
 })
 
