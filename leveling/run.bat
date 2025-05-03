@@ -1,0 +1,2 @@
+python level.py
+pause
