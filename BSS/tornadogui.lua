@@ -73,6 +73,8 @@ panel.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
 panel.BorderSizePixel = 0
 panel.Position = UDim2.new(0, 20, 0, 200)
 panel.Size = UDim2.new(0, 200, 0, 70)
+panel.Active = true
+panel.Draggable = true
 
 local title = Instance.new("TextLabel")
 title.Name = "Title"
