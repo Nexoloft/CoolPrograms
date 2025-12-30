@@ -126,6 +126,6 @@ ui.AncestryChanged:Connect(function(_, parent)
 	end
 end)
 
--- Optional: start disabled by default.
-setState(false)
+-- Start enabled by default.
+setState(true)
 
