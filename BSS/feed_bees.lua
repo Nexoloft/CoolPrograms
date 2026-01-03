@@ -1,34 +1,37 @@
 -- Feed Bees 4 Million Treats
--- This script feeds each bee in your hive 4 million treats
+-- Standalone script - feeds each bee in your hive 4 million treats
 
 pcall(function()
-	local Pepsi = shared.PepsiSwarm
-	if not Pepsi then
-		warn("PepsiSwarm not loaded! Please load Pepsi Swarm first.")
-		return
-	end
-
-	local me = Pepsi.Lp or Pepsi.Me()
+	-- Get essential services
+	local ReplicatedStorage = game:GetService("ReplicatedStorage")
+	local Players = game:GetService("Players")
+	
+	-- Get local player
+	local me = Players.LocalPlayer
 	if not me then
 		warn("Failed to get local player!")
 		return
 	end
-
-	local c = me.Character or workspace:FindFirstChild(me.Name)
+	
+	-- Wait for character
+	local c = me.Character or me:WaitForChild("Character", 5)
 	if not c then
 		warn("Failed to get character!")
 		return
 	end
-
-	-- Get player hive data
-	local ReplicatedStorage = game:GetService("ReplicatedStorage")
-	local PlayerHiveCommand = Pepsi.Obj(ReplicatedStorage, "Events", "PlayerHiveCommand")
+	
+	-- Find PlayerHiveCommand event
+	local PlayerHiveCommand = nil
+	local EventsFolder = ReplicatedStorage:FindFirstChild("Events")
+	if EventsFolder then
+		PlayerHiveCommand = EventsFolder:FindFirstChild("PlayerHiveCommand")
+	end
 	
 	if not PlayerHiveCommand then
 		warn("PlayerHiveCommand not found!")
 		return
 	end
-
+	
 	-- Function to feed a single bee
 	local function feedBee(beeId, treatAmount)
 		local args = {
@@ -42,15 +45,20 @@ pcall(function()
 			PlayerHiveCommand:FireServer(unpack(args))
 		end)
 	end
-
-	-- Get hive data from player
-	local hiveData = me:WaitForChild("Data"):WaitForChild("Hive")
 	
+	-- Get hive data from player
+	local dataFolder = me:WaitForChild("Data", 5)
+	if not dataFolder then
+		warn("Data folder not found!")
+		return
+	end
+	
+	local hiveData = dataFolder:WaitForChild("Hive", 5)
 	if not hiveData then
 		warn("Hive data not found!")
 		return
 	end
-
+	
 	-- Feed each bee
 	local beeCount = 0
 	for _, bee in pairs(hiveData:GetChildren()) do
@@ -61,6 +69,6 @@ pcall(function()
 			wait(0.5) -- Small delay to avoid server spam
 		end
 	end
-
+	
 	print("Fed " .. beeCount .. " bees with 4 million treats each!")
 end)
