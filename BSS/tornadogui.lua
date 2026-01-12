@@ -8,55 +8,74 @@ local Workspace = game:GetService("Workspace")
 local PARTICLE_ROOT_NAME = "Root"
 local PARTICLE_PLANE_NAME = "Plane"
 local TWEEN_TIME = 0.3
-local MAX_DISTANCE = 60
+local MAX_DISTANCE = 500
 
 local running = false
 local loopThread
 
 local function getRoot()
-	local plr = Players.LocalPlayer
-	local char = plr and plr.Character
-	return char and char:FindFirstChild("HumanoidRootPart"), plr
+    local plr = Players.LocalPlayer
+    local char = plr and plr.Character
+    return char and char:FindFirstChild("HumanoidRootPart"), plr
 end
 
 local function stepOnce()
-	local hrp, plr = getRoot()
-	if not hrp or not plr then return end
+    local hrp, plr = getRoot()
+    if not hrp or not plr then return end
 
-	local info = TweenInfo.new(TWEEN_TIME)
-	local targetProps = {}
-	local nameA = tostring(plr.Name)
+    local info = TweenInfo.new(TWEEN_TIME)
+    local targetProps = {}
+    local nameA = tostring(plr.Name)
 
-	for _, part in pairs(Workspace.Particles:GetDescendants()) do
-		if part.Name == PARTICLE_ROOT_NAME or part.Name == PARTICLE_PLANE_NAME then
-			for _, c in pairs(Workspace.Collectibles:GetChildren()) do
-				local nameStr = tostring(c)
-				if nameStr == nameA or nameStr == "C" then
-					if (c.Position - hrp.Position).Magnitude <= MAX_DISTANCE then
-						targetProps.CFrame = CFrame.new(c.Position.X, hrp.Position.Y, c.Position.Z)
-						local tween = TweenService:Create(part, info, targetProps)
-						tween:Play()
-					end
-				end
-			end
-		end
-	end
+    for _, part in pairs(Workspace.Particles:GetDescendants()) do
+        if part.Name == PARTICLE_ROOT_NAME or part.Name == PARTICLE_PLANE_NAME then
+            
+            -- [[ NEW CHECK START ]] --
+            -- We need to find the DangerBlink script to check its status.
+            local dangerScript = part:FindFirstChild("DangerBlink")
+
+            -- If we are processing the "Root", the script is likely in the sibling "Plane"
+            if not dangerScript and part.Parent then
+                local siblingPlane = part.Parent:FindFirstChild("Plane")
+                if siblingPlane then
+                    dangerScript = siblingPlane:FindFirstChild("DangerBlink")
+                end
+            end
+
+            -- Logic: If DangerBlink exists AND it is Enabled (Disabled is false), skip this tornado.
+            if dangerScript and dangerScript.Disabled == false then
+                continue
+            end
+            -- [[ NEW CHECK END ]] --
+
+            for _, c in pairs(Workspace.Collectibles:GetChildren()) do
+                local nameStr = tostring(c)
+                if nameStr == nameA or nameStr == "C" then
+                    if (c.Position - hrp.Position).Magnitude <= MAX_DISTANCE then
+                        targetProps.CFrame = CFrame.new(c.Position.X, hrp.Position.Y, c.Position.Z)
+                        local tween = TweenService:Create(part, info, targetProps)
+                        tween:Play()
+                    end
+                end
+            end
+        end
+    end
 end
 
 local function startTornado()
-	if running then return end
-	running = true
-	loopThread = task.spawn(function()
-		while running do
-			stepOnce()
-			task.wait(0.3)
-		end
-	end)
+    if running then return end
+    running = true
+    loopThread = task.spawn(function()
+        while running do
+            stepOnce()
+            task.wait(0.3)
+        end
+    end)
 end
 
 local function stopTornado()
-	running = false
-	loopThread = nil
+    running = false
+    loopThread = nil
 end
 
 -- Build GUI
@@ -103,29 +122,28 @@ toggle.TextSize = 14
 local on = false
 
 local function setState(nextState)
-	on = nextState
-	if on then
-		toggle.BackgroundColor3 = Color3.fromRGB(60, 170, 90)
-		toggle.Text = "[X] Bring Tornado"
-		startTornado()
-	else
-		toggle.BackgroundColor3 = Color3.fromRGB(180, 60, 60)
-		toggle.Text = "[ ] Bring Tornado"
-		stopTornado()
-	end
+    on = nextState
+    if on then
+        toggle.BackgroundColor3 = Color3.fromRGB(60, 170, 90)
+        toggle.Text = "[X] Bring Tornado"
+        startTornado()
+    else
+        toggle.BackgroundColor3 = Color3.fromRGB(180, 60, 60)
+        toggle.Text = "[ ] Bring Tornado"
+        stopTornado()
+    end
 end
 
 toggle.MouseButton1Click:Connect(function()
-	setState(not on)
+    setState(not on)
 end)
 
 -- Stop the tornado when the GUI is destroyed (e.g., teleport, re-execution).
 ui.AncestryChanged:Connect(function(_, parent)
-	if parent == nil then
-		setState(false)
-	end
+    if parent == nil then
+        setState(false)
+    end
 end)
 
 -- Start enabled by default.
 setState(true)
-
